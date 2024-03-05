@@ -6,11 +6,17 @@ let ifItsJoined = false;
 const userStates = new Map();
 const channelUsername = '@ThrapyEn';
 const channelUsername2 = '@ProteinTeam';
+const channelForwardName = '@usersTHerapy';
 const joined = ['عضو شدم', 'i joined', 'عضو شدم | i joined'];
 let mainMenu = ['منو اصلی', 'main menu', 'منو اصلی | main menu'];
 let userProfile = ['حساب کاربری شما📖✏️', 'your profile 📖✏️', 'حساب کاربری شما📖✏️ | your profile 📖✏'];
+const wrongStep = ["لطفا به ربات ورودی مورد درست بدهید شما به منوی اصلی هدایت میشوید", "please enter the correct input you will redirect to the main menu", "⚠️"];
 let aboutUs = ['درباره ما', 'about us', 'درباره ما | about us'];
-let createTherapy = ["بیا یک جلسه تراپی متنی را شروع کنیم🧠|🧠start a text to text therapy", "تراپی صوتی🧠|🧠voice to voice therapy", "تراپی های قبلی من🧠|🧠my last therapies"];
+const createTherapy = ["بیا یک جلسه تراپی متنی را شروع کنیم🧠|🧠start a text to text therapy", "تراپی صوتی🧠|🧠voice to voice therapy", "تراپی های قبلی من🧠|🧠my last therapies", "لطفاً با دقت و آرامش، صحبت‌های خود را با تراپیست سرزمین پروتئین به اشتراک بگذارید 🌿🗣️. توجه داشته باشید که در هر پیام، فقط امکان ارسال یک پیام صوتی با حداکثر مدت زمان یک دقیقه وجود دارد ⏳🎙️. برای ادامه‌ی گفتگو، لازم است ابتدا منتظر دریافت پاسخ از سوی تراپیست باشید و پس از آن، پیام‌های بعدی خود را به صورت صوتی ارسال کنید 🔁🎧.", "Please carefully and calmly share your thoughts with the therapist of Protein Land 🌿🗣️. Note that in each message, you can only send one voice message with a maximum duration of one minute ⏳🎙️. To continue the conversation, you must first wait for a response from the therapist, and then, send your subsequent messages as voice recordings 🔁🎧.", "پیام شما به تراپیست سرزمین پروتئین رسید لطفا منتظر پاسخ باشید\n\nYour message has been received by the therapist of the protein land. Please wait for a reply"];
+const nameGetter = ["💆‍♂️💆‍♀️", "چه اسمی دوست دارید ما شما رو با اون صدا بزنیم؟🖌", "What name would you like us to call you?🖌"];
+const therapyOption = ["اگر می‌خواهید به جلسه تراپی 🌿✨ ادامه دهید، لطفاً به منوها توجه نکنید و ادامه‌ی جلسه را با تراپیست ما 🧑‍⚕️🌟 صحبت کنید. اما اگر مایل به پایان دادن به جلسه هستید، کافی است بر روی دکمه \"اتمام جلسه\" 🔴🛑 ضربه بزنید. ما همیشه اینجا هستیم تا به شما کمک کنیم! 💖👐\n" +
+"\n" +
+"If you wish to continue the therapy session 🌿✨, please ignore the menus and discuss the continuation of the session with our therapist 🧑‍⚕️🌟. However, if you would like to end the session, simply tap on the \"End Session\" button 🔴🛑. We are always", "اتمام جلسه تراپی | end the therapy session"];
 let aboutUsText = `
 ما در پروتئین، یک تیم پویا و نوآور در عرصه هوش مصنوعی هستیم. 🚀👨‍💻👩‍💻 با ارائه خدمات و سرویس‌های متنوع و خلاقانه، 🌟🛠️ می‌کوشیم تا دسترسی عموم جامعه به ابزارهای پیشرفته هوش مصنوعی را فراهم آوریم. هدف ما، تسهیل فعالیت‌های حرفه‌ای افراد شاغل از طریق به کارگیری قدرت هوش مصنوعی است. 💡🤖💼 ما بر این باوریم که هر فردی باید بتواند از مزایای این فناوری شگفت‌انگیز به نفع خود و جامعه‌اش بهره ببرد. 🌍❤️ با ما همراه باشید تا با هم آینده‌ای روشن‌تر و هوشمندتر بسازیم. 🌈🛠️🔮
 
@@ -38,15 +44,186 @@ bot.on('message', async (msg) => {
             findingLastTherapySession: false,
             isCompletingProfile: false,
             isInvitingFriend: false,
+            isGettingUserName: false,
             threadId: "",
             lastText: "",
             preferLanguage: "",
-            tone: "",
+            isRequestingVoiceTherapy: false,
             textTone: ""
         };
         userStates.set(chatId, userState);
     }
-    if (text.startsWith('/start')) {
+    if (userState.isRequestingVoiceTherapy) {
+        if (msg.voice) {
+            await bot.sendMessage(channelForwardName, "------------New Message------------------");
+            bot.forwardMessage(channelForwardName, msg.chat.id, msg.message_id)
+                .then(function(response){
+                    // Message was forwarded successfully
+                    console.log("Message forwarded successfully:", response);
+                })
+                .catch(function(error){
+                    // Handle any errors that occur
+                    console.error("Error forwarding message:", error);
+                });
+            await bot.sendMessage(chatId, "📮");
+            await bot.sendMessage(chatId, createTherapy[5]);
+            console.log(userState.lastText);
+            console.log("this is here its a voice");
+            const fileId = msg.voice.file_id;
+            bot.getFile(fileId).then(async (file) => {
+                const filePath = file.file_path;
+                const downloadUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
+
+                try {
+                    // Download the file from Telegram
+                    const response = await axios({
+                        method: 'get',
+                        url: downloadUrl,
+                        responseType: 'stream'
+                    });
+
+                    // Prepare the file path for saving
+                    const timestamp = Date.now();
+                    const tempFilePath = path.join(__dirname, `${chatId}-${timestamp}-user-therapy.mp3`);
+
+                    // Save the file temporarily
+                    response.data.pipe(fs.createWriteStream(tempFilePath)).on('finish', () => {
+                        console.log('File downloaded.');
+
+                        // Prepare form data
+                        const formData = new FormData();
+                        formData.append('file', fs.createReadStream(tempFilePath));
+                        formData.append('idChat', msg.chat.id.toString());
+
+                        // Send the file to your server
+                        axios.post('http://localhost:3001/audioToTranscript', formData, {
+                            headers: formData.getHeaders()
+                        })
+                            .then((res) => {
+                                console.log(res.data);
+                                const userTextMessage = res.data.messages;
+                                const name = userState.lastText;
+
+                                axios.post('http://localhost:3001/therapy', {
+                                    message: userTextMessage,
+                                    idChat: chatId,
+                                    name: name
+                                }).then(async (response) => {
+                                    await delay(3000);
+                                    const data = await fetchUntilDataReceived(chatId);
+                                    console.log("after fetch");
+                                    await bot.sendMessage(chatId, data.response[0].text.value);
+                                    let object = {
+                                        message: data.response[0].text.value,
+                                        idChat: chatId
+                                    }
+                                    if (isPersian(data.response[0].text.value)) {
+                                        console.log("it is Persian");
+                                        // therapyOption
+                                        bot.sendMessage(chatId, therapyOption[0], {
+                                            reply_markup: {
+                                                keyboard: [
+                                                    [{text: therapyOption[1]}],
+                                                ],
+                                                resize_keyboard: true,
+                                                one_time_keyboard: true
+                                            }
+                                        });
+                                    } else {
+                                        console.log("it is not Persian");
+                                        axios.post('http://localhost:3001/TextAudio', object)
+                                            .then((res) => {
+                                                console.log("this is res");
+                                                console.log(res);
+                                                const localFilePath = res.data.path + '/' + res.data.name
+                                                console.log(chatId);
+                                                bot.sendAudio(chatId, localFilePath)
+                                            })
+                                            .catch((error) => {
+                                                console.error('Error sending data to server:', error);
+                                            });
+                                    }
+                                }).catch((error) => {
+                                    console.log("error in the therapy post part");
+                                    console.log(error);
+                                });
+                            })
+                            .catch((error) => {
+                                console.error('Error sending file to server:', error);
+                                // Remove the temporary file
+                                fs.unlinkSync(tempFilePath);
+                            });
+
+                    });
+                } catch (error) {
+                    console.error('Error downloading file:', error);
+                }
+            });
+        } else {
+            await bot.sendMessage(chatId, "📮");
+            await bot.sendMessage(chatId, createTherapy[5]);
+            axios.post('http://localhost:3001/therapy', {
+                message: text,
+                idChat: chatId,
+                name: name
+            }).then(async (response) => {
+                await delay(3000);
+                const data = await fetchUntilDataReceived(chatId);
+                console.log("after fetch");
+                await bot.sendMessage(chatId, data.response[0].text.value);
+                let object = {
+                    message: data.response[0].text.value,
+                    idChat: chatId
+                }
+                if (isPersian(data.response[0].text.value)) {
+                    console.log("it is Persian");
+                    // therapyOption
+                    bot.sendMessage(chatId, therapyOption[0], {
+                        reply_markup: {
+                            keyboard: [
+                                [{text: therapyOption[1]}],
+                            ],
+                            resize_keyboard: true,
+                            one_time_keyboard: true
+                        }
+                    });
+                } else {
+                    console.log("it is not Persian");
+                    axios.post('http://localhost:3001/TextAudio', object)
+                        .then((res) => {
+                            console.log("this is res");
+                            console.log(res);
+                            const localFilePath = res.data.path + '/' + res.data.name
+                            console.log(chatId);
+                            bot.sendAudio(chatId, localFilePath)
+                        })
+                        .catch((error) => {
+                            console.error('Error sending data to server:', error);
+                        });
+                }
+            }).catch((error) => {
+                console.log("error in the therapy post part");
+                console.log(error);
+            });
+        }
+    } else if (msg.voice) {
+        await bot.sendMessage(chatId, wrongStep[2]);
+        await bot.sendMessage(chatId, wrongStep[1]);
+        await bot.sendMessage(chatId, wrongStep[0]);
+        await sendCustomMessage(bot, chatId);
+    } else if (text === therapyOption[1]) {
+        userStates.set(chatId, {
+            ...userState,
+            lastText: "",
+            isCreatingTherapySession: false,
+            isRequestingEndingTherapy: false,
+            findingLastTherapySession: false,
+            isRequestingVoiceTherapy: false,
+            isGettingUserName: false,
+            threadId: "",
+        });
+        await sendCustomMessage(bot, chatId);
+    } else if (text.startsWith('/start')) {
         console.log("this is id " + msg.from.id);
         console.log(msg.text);
 
@@ -119,12 +296,33 @@ bot.on('message', async (msg) => {
             isInvitingFriend: false,
             threadId: "",
             lastText: "",
-            tone: "",
+            isRequestingVoiceTherapy: false,
             textTone: ""
         });
 
     } else if (text === createTherapy[1]) {
-
+        await bot.sendMessage(chatId, nameGetter[0]);
+        await bot.sendMessage(chatId, nameGetter[2]);
+        await bot.sendMessage(chatId, nameGetter[1]);
+        userStates.set(chatId, {
+            ...userState,
+            isGettingUserName: true,
+        });
+    } else if (userState.isGettingUserName) {
+        await bot.sendMessage(chatId, "🗣");
+        await bot.sendMessage(chatId, createTherapy[4]);
+        await bot.sendMessage(chatId, createTherapy[3]);
+        userStates.set(chatId, {
+            ...userState,
+            isRequestingVoiceTherapy: true,
+            isGettingUserName: false,
+            lastText: text
+        });
+    } else if (text === createTherapy[0]) {
+        let data = await fetchUntilDataReceived(chatId)
+        console.log(data);
+        console.log("after fetch");
+        await bot.sendMessage(chatId, data.response[0].text.value);
     } else if (text === joined[2]) {
         console.log("this is id " + msg.from.id);
         // Check if the user is a member of the channel
@@ -170,6 +368,8 @@ bot.on('message', async (msg) => {
             isCreatingTherapySession: false,
             isRequestingEndingTherapy: false,
             findingLastTherapySession: false,
+            isRequestingVoiceTherapy: false,
+            isGettingUserName: false,
             threadId: "",
         });
         await sendCustomMessage(bot, chatId);
@@ -205,6 +405,53 @@ async function checkChannelMembership(chatId, userId) {
         return false;
     }
 }
+
+
+function fetchUntilDataReceived(idChat) {
+    console.log("after delay we are here");
+    return new Promise((resolve, reject) => {
+        const url = `http://localhost:3001/therapy?idChat=${idChat}`;
+
+        const fetchData = () => {
+            axios.get(url)
+                .then(response => {
+                    const data = response.data;
+                    console.log("this is response data");
+
+                    // Check if the response indicates the data is not ready
+                    if (data.response === "not ready") {
+                        console.log("Data not ready, trying again in 1 second...");
+                        // Wait for 1 second before trying again
+                        setTimeout(fetchData, 1000);
+                    } else {
+                        // Data is ready, resolve the Promise with the data
+                        resolve(data);
+                        console.log("data is ready");
+                        console.log(data);
+                        console.log("data is ready");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                    reject(error); // Reject the Promise if there is an error
+                });
+        };
+
+        fetchData(); // Start the fetching process
+    });
+}
+
+const delay = (delayInms) => {
+    return new Promise(resolve => setTimeout(resolve, delayInms));
+};
+
+
+function isPersian(text) {
+    // Regular expression to match Persian characters and Arabic numerals which are also used in Persian
+    const persianRegex = /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+    return persianRegex.test(text);
+}
+
 
 async function checkChannelMembership2(chatId, userId) {
     try {
