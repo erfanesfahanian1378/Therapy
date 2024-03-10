@@ -202,6 +202,16 @@ Thank you for being awesome! 🎉💐`;
             } else {
                 await bot.sendMessage(chatId, plansMessage);
                 await sendCustomMessage(bot, chatId);
+                userStates.set(chatId, {
+                    ...userState,
+                    lastText: "",
+                    isCreatingTherapySession: false,
+                    isRequestingEndingTherapy: false,
+                    findingLastTherapySession: false,
+                    isRequestingVoiceTherapy: false,
+                    isGettingUserName: false,
+                    threadId: "",
+                });
             }
 
         } else if (text === therapyOption[1]) {
@@ -278,6 +288,16 @@ Thank you for being awesome! 🎉💐`;
             } else {
                 await bot.sendMessage(chatId, plansMessage);
                 await sendCustomMessage(bot, chatId);
+                userStates.set(chatId, {
+                    ...userState,
+                    lastText: "",
+                    isCreatingTherapySession: false,
+                    isRequestingEndingTherapy: false,
+                    findingLastTherapySession: false,
+                    isRequestingVoiceTherapy: false,
+                    isGettingUserName: false,
+                    threadId: "",
+                });
             }
         }
     } else if (msg.voice) {
@@ -402,6 +422,16 @@ Thank you for being awesome! 🎉💐`;
     } else if (text === messageChargeOption1) {
         await bot.sendMessage(chatId, plansMessage);
         await sendCustomMessage(bot, chatId);
+        userStates.set(chatId, {
+            ...userState,
+            lastText: "",
+            isCreatingTherapySession: false,
+            isRequestingEndingTherapy: false,
+            findingLastTherapySession: false,
+            isRequestingVoiceTherapy: false,
+            isGettingUserName: false,
+            threadId: "",
+        });
     } else if (text === createTherapy[0]) {
         let data = await fetchUntilDataReceived(chatId)
         console.log(data);
