@@ -476,6 +476,16 @@ Thank you for being awesome! 🎉💐`;
             });
         }
     } else if (text === createTherapy[2]) {
+        await sendCustomMessage(bot, chatId);
+        userStates.set(chatId, {
+            ...userState,
+            lastText: "",
+            isCreatingTherapySession: false,
+            isRequestingEndingTherapy: false,
+            isRequestingVoiceTherapy: false,
+            isGettingUserName: false,
+            threadId: "",
+        });
         let objectMenu = [];
         axios.get('http://localhost:3001/showAllTherapies?idChat=' + chatId)
             .then((res) => {
@@ -550,7 +560,6 @@ Thank you for being awesome! 🎉💐`;
 
 🔶 موجودی حساب کاربری شما💰💸 : 🟣 تعداد دفعات مجاز برای استفاده از ربات دکتر و ازمایش خوان💉 : ${response.data[0].universalWallet} تومان
 
-📣 اگر دوست داری کلی از ربات کوردرا، رایگان استفاده کنی فقط کافیه 2 نفر از دوستانت را عضو کنی🤩🔥
 
 Dear ${ProteinTeam},
 
@@ -566,9 +575,7 @@ Here's the status of your subscriptions for Protein products:
 
 🟣 Allowed uses for the Doctor and Lab Test Bot 💉: ${response.data[0].tokenBloodTest} times
 
-🔶 Your account balance 💰💸: ${response.data[0].universalWallet} Euros
-
-📣 If you'd like to use all of Protein Bots for free, just invite 2 friends to join!🔥🤩`;
+🔶 Your account balance 💰💸: ${response.data[0].universalWallet} Euros`;
 
 
             await bot.sendMessage(chatId, textProfile, {
